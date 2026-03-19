@@ -38,11 +38,11 @@ export default function Header() {
 
           {/* Logo */}
           <Image
-            src="/logo.png"
+            src="/logoBlanco.png"
             alt="Logo Peumayén"
             width={150}
             height={150}
-            className="w-16"
+            className="w-28"
           />
 
           {/* Desktop Nav */}

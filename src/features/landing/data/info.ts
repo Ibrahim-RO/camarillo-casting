@@ -15,3 +15,21 @@ export const info = [
         description: "Respuesta en menos de 24 horas"
     },
 ]
+
+export const socialMedias = [
+    {
+        name: "Facebook",
+        info: "CAMARILLO CASTING",
+        url: "Para registrarte como extra en nuestras producciones"
+    },
+    {
+        name: "Instagram",
+        info: "CAMARILLO_CASTING",
+        url: "Para contratar nuestros servicios de casting"
+    },
+    {
+        name: "TikTok",
+        info: "CAMARILLO.CASTING",
+        url: "Respuesta en menos de 24 horas"
+    },
+]

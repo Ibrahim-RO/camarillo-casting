@@ -18,9 +18,9 @@ export default function MarcasClientes() {
   ];
 
   return (
-    <section className="py-16 overflow-hidden bg-[#030712] border-t border-slate-800/50 relative">
+    <section className="py-16 overflow-hidden bg-white/5  relative">
 
-      <p className="text-center text-slate-400 text-xs md:text-sm font-mono mb-10 uppercase tracking-widest">
+      <p className="text-center text-slate-400 text-xs md:text-lg font-mono mb-10 uppercase tracking-widest">
         Empresas que confían en nosotros
       </p>
 

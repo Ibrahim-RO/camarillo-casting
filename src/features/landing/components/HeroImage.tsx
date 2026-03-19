@@ -63,7 +63,7 @@ export default function HeroImage() {
         <button
           data-aos="zoom-in"
           data-aos-delay="400"
-          className="bg-gold hover:bg-yellow-600 transition-all duration-300 text-lg text-black font-semibold px-6 py-3 rounded-lg hover:scale-105"
+          className="bg-gold hover:bg-yellow-600 text-lg text-black font-semibold px-6 py-3 rounded-lg transition-colors duration-300 cursor-pointer"
         >
           Contáctanos
         </button>
