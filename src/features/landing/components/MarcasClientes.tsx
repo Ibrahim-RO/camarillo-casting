@@ -6,15 +6,15 @@ import { useState } from "react";
 export default function MarcasClientes() {
 
   const techStack = [
-    "/clientesMarcas/IMG_1399.JPG",
-    "/clientesMarcas/IMG_3680.JPG",
-    "/clientesMarcas/IMG_3681.JPG",
-    "/clientesMarcas/IMG_3682.JPG",
-    "/clientesMarcas/IMG_3683.JPG",
-    "/clientesMarcas/IMG_3684.JPG",
-    "/clientesMarcas/IMG_3686.JPG",
-    "/clientesMarcas/IMG_3687.JPG",
-    "/clientesMarcas/IMG_3688.JPG",
+    "/clientesMarcas/IMG_1399.jpg",
+    "/clientesMarcas/IMG_3680.jpg",
+    "/clientesMarcas/IMG_3681.jpg",
+    "/clientesMarcas/IMG_3682.jpg",
+    "/clientesMarcas/IMG_3683.jpg",
+    "/clientesMarcas/IMG_3684.jpg",
+    "/clientesMarcas/IMG_3686.jpg",
+    "/clientesMarcas/IMG_3687.jpg",
+    "/clientesMarcas/IMG_3688.jpg",
   ];
 
   return (
