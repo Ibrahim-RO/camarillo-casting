@@ -55,7 +55,9 @@ export default function Projects() {
         { id: "rodaje", label: "En Rodaje", count: data.rodaje.length },
     ];
 
-    // Sliding indicator + auto-scroll active tab into view on mobile
+    const userInteracted = useRef(false);
+
+    // Sliding indicator + auto-scroll active tab into view on mobile (only on user interaction)
     useEffect(() => {
         const container = tabsRef.current;
         const indicator = indicatorRef.current;
@@ -66,7 +68,11 @@ export default function Projects() {
         if (!activeBtn) return;
         indicator.style.width = `${activeBtn.offsetWidth}px`;
         indicator.style.left = `${activeBtn.offsetLeft}px`;
-        activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+
+        // Solo hacer scroll del tab si el usuario ya interactuó
+        if (userInteracted.current) {
+            activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }
     }, [active]);
 
     // PhotoSwipe
@@ -120,12 +126,12 @@ export default function Projects() {
     return (
         <section className="py-10">
             {/* Header */}
-            <div className="mb-12">
+            <div className="mb-12 max-w-3xl">
                 <h2 className="text-4xl md:text-5xl font-serif mb-4">
                     Nuestros <span className="text-gold">Proyectos</span>
                 </h2>
                 <p className="text-gray-400 text-sm md:text-base">
-                    Un recorrido por algunas de las producciones en las que Camarillo Casting ha colaborado, aportando talento, organización y presencia en pantalla para enriquecer cada historia y dar vida a cada escena
+                    Un recorrido por nuestras producciones.
                 </p>
             </div>
 
@@ -155,7 +161,7 @@ export default function Projects() {
                         <button
                             key={tab.id}
                             data-id={tab.id}
-                            onClick={() => setActive(tab.id)}
+                            onClick={() => { userInteracted.current = true; setActive(tab.id); }}
                             className={`
                                 relative flex items-center gap-2
                                 px-4 sm:px-5 py-3

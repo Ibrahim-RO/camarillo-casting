@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display, Geist } from "next/font/google";
 import "./globals.css";
 import "photoswipe/style.css";
 import AOSProvider from "@/src/shared/utils/AosProvider";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="text-white">
+    <html lang="es" className={cn("text-white", "font-sans", geist.variable)}>
       <body
         className={`${inter.variable} ${playfair.variable} antialiased`}
       >
