@@ -8,7 +8,7 @@ export default function MarcasClientes() {
   const techStack = [
     "/clientesMarcas/IMG_1399.jpg",
     "/clientesMarcas/IMG_3680.jpg",
-    "/clientesMarcas/IMG_3681.jpg",
+    "/clientesMarcas/prueba.jpg",
     "/clientesMarcas/IMG_3682.jpg",
     "/clientesMarcas/IMG_3683.jpg",
     "/clientesMarcas/IMG_3684.jpg",
