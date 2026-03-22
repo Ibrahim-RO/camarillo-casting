@@ -8,30 +8,52 @@ import { Menu, X } from "lucide-react";
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("inicio");
+
+  const navLinks = [
+    { name: "Inicio", href: "#inicio", id: "inicio" },
+    { name: "Nosotros", href: "#nosotros", id: "nosotros" },
+    { name: "Proyectos", href: "#proyectos", id: "proyectos" },
+    { name: "Ubicación", href: "#ubicacion", id: "ubicacion" },
+    { name: "Clientes", href: "#clientes", id: "clientes" },
+    { name: "Contacto", href: "#contacto", id: "contacto" },
+  ];
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Inicio", href: "/" },
-    { name: "Proyectos", href: "#proyectos" },
-    { name: "Nosotros", href: "#nosotros" },
-    { name: "Contacto", href: "#contacto" },
-  ];
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+
+    navLinks.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveSection(id);
+        },
+        {
+          rootMargin: "-30% 0px -60% 0px", // activa cuando la sección ocupa el tercio superior
+          threshold: 0,
+        }
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
 
   return (
     <>
       <header
-        className={`w-full fixed top-0 left-0 z-50 transition-all duration-500 ${scrolled
-          ? "bg-black/60 backdrop-blur-md py-3"
-          : "bg-transparent py-5"
+        className={`w-full fixed top-0 left-0 z-50 transition-all duration-500 ${scrolled ? "bg-black/60 backdrop-blur-md py-3" : "bg-transparent py-5"
           }`}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-6">
@@ -39,7 +61,7 @@ export default function Header() {
           {/* Logo */}
           <Image
             src="/logoBlanco.png"
-            alt="Logo Peumayén"
+            alt="Logo Camarillo"
             width={150}
             height={150}
             className="w-28"
@@ -47,15 +69,26 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-gray-200 hover:text-amber-300 transition-colors duration-300 mx-4 font-medium relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.75 after:bg-yellow-300 after:transition-all after:duration-300 hover:after:w-full"
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`
+                    relative mx-4 font-medium transition-colors duration-300
+                    after:content-[''] after:absolute after:-bottom-1 after:left-0
+                    after:h-px after:transition-all after:duration-300
+                    ${isActive
+                      ? "text-gold after:w-full after:bg-gold"
+                      : "text-gray-200 hover:text-gold after:w-0 after:bg-gold hover:after:w-full"
+                    }
+                  `}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Mobile Button */}
@@ -74,16 +107,20 @@ export default function Header() {
           }`}
       >
         <div className="flex flex-col items-center justify-center h-full space-y-8 text-2xl font-semibold">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="text-white hover:text-amber-400 transition-colors"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = activeSection === link.id;
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className={`transition-colors duration-300 ${isActive ? "text-gold" : "text-white hover:text-gold"
+                  }`}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </>

@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <>
         <Header />
-        <main className="bg-[#121112]">
+        <main className="bg-[#121112] text-white">
             {children}
         </main>
         <Footer />

@@ -4,14 +4,17 @@ type Props = {
 
 export default function SectionTitle({ text }: Props) {
     return (
-        <div className="w-full py-6 flex items-center justify-center md:justify-normal -ml-4">
-            <div className="flex items-center w-full px-4">
-                <div className="flex-1 lg:flex-none lg:w-20 h-0.5 bg-gold opacity-70"></div>
-                <h2 className="mx-6 text-gold tracking-[0.4em] text-lg md:text-xl uppercase">
-                    {text}
-                </h2>
-                <div className="flex-1 h-0.5 bg-gold opacity-70 md:hidden"></div>
-            </div>
+        <div className="w-full py-6 flex items-center">
+            {/* Línea izquierda — siempre visible */}
+            <div className="w-12 md:w-20 h-px bg-gold opacity-70 shrink-0" />
+
+            {/* Texto */}
+            <h2 className="mx-4 flex-1 text-center md:text-left text-gold tracking-[0.4em] text-sm md:text-lg font-medium uppercase whitespace-nowrap">
+                {text}
+            </h2>
+
+            {/* Línea derecha — solo en móvil */}
+            <div className="w-12 h-px bg-gold opacity-70 md:hidden" />
         </div>
     );
 }

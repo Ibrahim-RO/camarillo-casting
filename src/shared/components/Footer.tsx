@@ -7,11 +7,11 @@ export default function Footer() {
     ]
 
     return (
-        <footer className="bg-[#121112] text-center py-8 space-y-8">
+        <footer className="bg-[#121112] text-center py-8 space-y-8 text-white">
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
-                <div className="flex flex-col justify-center items-center">
+                <div className="flex flex-col gap-3">
                     <img src="/logoBlanco.png" alt="Logo Camarillo Casting" className="w-36"/>
-                    <p>"Donde el talento encuentra su escena"</p>
+                    <p className="max-w-md text-left">"Donde el talento encuentra su escena y el casting se convierte en respaldo para tu producción"</p>
                 </div>
 
                 <div className="flex flex-col justify-center items-center gap-3">

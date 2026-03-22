@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ModalContact } from "./ModalContact";
 
 export default function HeroImage() {
   return (
@@ -45,7 +46,7 @@ export default function HeroImage() {
         <h1
           data-aos="fade-up"
           data-aos-delay="200"
-          className="font-serif text-4xl md:text-6xl font-bold text-gold uppercase"
+          className="font-serif text-3xl md:text-6xl font-bold text-gold uppercase"
         >
           REGISTRATE EN NUESTRO CASTING
         </h1>
@@ -54,19 +55,21 @@ export default function HeroImage() {
         <p
           data-aos="fade-up"
           data-aos-delay="300"
-          className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto"
+          className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto"
         >
-          Buscamos talento para las producciones más importantes de la industria cinematográfica y televisiva.
+          Buscamos talentos y extras para las producciones más importantes de la industria cinematográfica y televisiva.
         </p>
 
-        {/* Botón */}
+        {/* Botón
         <button
           data-aos="zoom-in"
           data-aos-delay="400"
           className="bg-gold hover:bg-yellow-600 text-lg text-black font-semibold px-6 py-3 rounded-lg transition-colors duration-300 cursor-pointer"
         >
           Contáctanos
-        </button>
+        </button> */}
+
+        <ModalContact />
 
       </div>
 

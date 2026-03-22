@@ -8,28 +8,32 @@ export default function Contact() {
     <>
       <SectionTitle text='Contacto' />
 
-      <div className="space-y-5">
-        <p className='text-center lg:text-left'>Información de contacto:</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <div className="grid grid-cols-1 gap-4">
-            {info.map(item => (
-              <CardInfo
-                key={`info-${item.name}`}
-                data={item}
-              />
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {socialMedias.map(item => (
-              <CardSocialMedias
-                key={`social-${item.name}`}
-                data={item}
-              />
-            ))}
-          </div>
+        <div className="flex flex-col gap-3">
+          <p className="text-center lg:text-left text-white/70 text-sm mb-1">
+            Información de contacto:
+          </p>
+          {info.map(item => (
+            <CardInfo
+              key={`info-${item.name}`}
+              data={item}
+            />
+          ))}
         </div>
+
+        <div className="flex flex-col gap-3">
+          <p className="text-center lg:text-left text-white/70 text-sm mb-1">
+            Redes sociales:
+          </p>
+          {socialMedias.map(item => (
+            <CardSocialMedias
+              key={`social-${item.name}`}
+              data={item}
+            />
+          ))}
+        </div>
+
       </div>
     </>
   )
