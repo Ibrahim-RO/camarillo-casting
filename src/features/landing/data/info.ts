@@ -25,19 +25,19 @@ export const socialMedias = [
     {
         name: "Facebook",
         info: "CAMARILLO CASTING",
-        url: "https://facebook.com/",
+        url: "https://www.facebook.com/share/1C3utTEUJQ/?mibextid=wwXIfr",
         icon: "/facebook.svg",
     },
     {
         name: "Instagram",
         info: "CAMARILLO_CASTING",
-        url: "https://instagram.com/",
+        url: "https://www.instagram.com/camarillo_casting?igsh=MWlzZmhwaGg2aTd2Zw==",
         icon: "/instagram.svg",
     },
     {
         name: "TikTok",
         info: "CAMARILLO.CASTING",
-        url: "Respuesta en menos de 24 horas",
+        url: "https://www.tiktok.com/@camarillo.casting?_r=1&_t=ZS-94voVh0COdl",
         icon: "/tiktok.svg",
     },
 ]
