@@ -1,16 +1,202 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import AOS from "aos";
-import PhotoSwipeLightbox from "photoswipe/lightbox";
 
 type Category = "peliculas" | "series" | "comerciales" | "rodaje";
 
+// ─── VideoThumbnail ───────────────────────────────────────────────────────────
+// Captura el primer frame del video y lo muestra como imagen estática.
+// No hay <video> visible ni audio en el grid.
+
+function VideoThumbnail({ src }: { src: string }) {
+    const [thumb, setThumb] = useState<string | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        const video = document.createElement("video");
+        video.src = src;
+        video.muted = true;
+        video.playsInline = true;
+        video.preload = "metadata";
+        video.crossOrigin = "anonymous";
+
+        const capture = () => {
+            // Buscar al segundo 0 para asegurar que haya frame
+            video.currentTime = 0.001;
+        };
+
+        const draw = () => {
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 360;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                setThumb(canvas.toDataURL("image/jpeg", 0.85));
+            } catch {
+                // Si el video no permite captura (CORS), se queda en null → fondo negro
+            }
+            video.src = ""; // liberar memoria
+        };
+
+        video.addEventListener("loadedmetadata", capture);
+        video.addEventListener("seeked", draw);
+        video.load();
+
+        return () => {
+            video.removeEventListener("loadedmetadata", capture);
+            video.removeEventListener("seeked", draw);
+            video.src = "";
+        };
+    }, [src]);
+
+    return (
+        <div className="relative w-full aspect-video bg-neutral-900 overflow-hidden">
+            {thumb && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                    src={thumb}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+            )}
+            {/* Overlay oscuro encima del frame */}
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-200" />
+            {/* Ícono de play centrado */}
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-gold/90 flex items-center justify-center shadow-lg
+                                transition-transform duration-200 group-hover:scale-110">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-black ml-0.5">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+
+interface LightboxProps {
+    files: string[];
+    index: number;
+    onClose: () => void;
+    onPrev: () => void;
+    onNext: () => void;
+}
+
+function Lightbox({ files, index, onClose, onPrev, onNext }: LightboxProps) {
+    const file = files[index];
+    const isVideo =
+        file.toLowerCase().endsWith(".mp4") ||
+        file.toLowerCase().endsWith(".mov");
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+            if (e.key === "ArrowLeft") onPrev();
+            if (e.key === "ArrowRight") onNext();
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [onClose, onPrev, onNext]);
+
+    useEffect(() => {
+        document.body.style.overflow = "hidden";
+        return () => { document.body.style.overflow = ""; };
+    }, []);
+
+    return createPortal(
+        <div
+            className="fixed inset-0 z-9999 flex items-center justify-center bg-black/95"
+            onClick={onClose}
+        >
+            <div
+                className="relative flex items-center justify-center w-full h-full p-4 md:p-10"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {isVideo ? (
+                    <video
+                        key={file}
+                        src={file}
+                        controls
+                        autoPlay
+                        playsInline
+                        className="max-w-full max-h-[85vh] rounded-lg shadow-2xl outline-none"
+                    />
+                ) : (
+                    <Image
+                        key={file}
+                        src={file}
+                        alt=""
+                        width={1600}
+                        height={1200}
+                        className="max-w-full max-h-[85vh] w-auto h-auto rounded-lg shadow-2xl object-contain"
+                    />
+                )}
+
+                {/* Cerrar */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center
+                               rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+                    aria-label="Cerrar"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                {/* Anterior */}
+                {index > 0 && (
+                    <button
+                        onClick={onPrev}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center
+                                   rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+                        aria-label="Anterior"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                )}
+
+                {/* Siguiente */}
+                {index < files.length - 1 && (
+                    <button
+                        onClick={onNext}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center
+                                   rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+                        aria-label="Siguiente"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                )}
+
+                {/* Contador */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-white/50 font-mono">
+                    {index + 1} / {files.length}
+                </div>
+            </div>
+        </div>,
+        document.body
+    );
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
 export default function Projects() {
     const [active, setActive] = useState<Category>("peliculas");
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const indicatorRef = useRef<HTMLDivElement>(null);
     const tabsRef = useRef<HTMLDivElement>(null);
+    const userInteracted = useRef(false);
 
     const data: Record<Category, string[]> = {
         peliculas: [],
@@ -65,89 +251,27 @@ export default function Projects() {
         { id: "rodaje", label: "En Rodaje", count: data.rodaje.length },
     ];
 
-    const userInteracted = useRef(false);
+    const currentFiles = data[active];
 
-    // Sliding indicator + auto-scroll active tab into view on mobile (only on user interaction)
+    const openLightbox = useCallback((i: number) => setLightboxIndex(i), []);
+    const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+    const prevItem = useCallback(() =>
+        setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : i)), []);
+    const nextItem = useCallback(() =>
+        setLightboxIndex((i) => (i !== null && i < currentFiles.length - 1 ? i + 1 : i)), [currentFiles.length]);
+
+    // Sliding indicator
     useEffect(() => {
         const container = tabsRef.current;
         const indicator = indicatorRef.current;
         if (!container || !indicator) return;
-        const activeBtn = container.querySelector<HTMLButtonElement>(
-            `[data-id="${active}"]`
-        );
+        const activeBtn = container.querySelector<HTMLButtonElement>(`[data-id="${active}"]`);
         if (!activeBtn) return;
         indicator.style.width = `${activeBtn.offsetWidth}px`;
         indicator.style.left = `${activeBtn.offsetLeft}px`;
-
         if (userInteracted.current) {
             activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
         }
-    }, [active]);
-
-    // PhotoSwipe
-    useEffect(() => {
-        const lightbox = new PhotoSwipeLightbox({
-            gallery: "#gallery",
-            children: "a",
-            pswpModule: () => import("photoswipe"),
-            initialZoomLevel: "fit",
-            secondaryZoomLevel: 1.5,
-            maxZoomLevel: 3,
-            bgOpacity: 0.95,
-            padding: { top: 40, bottom: 40, left: 40, right: 40 },
-        });
-
-        // Pausar todos los videos del grid al abrir el lightbox
-        lightbox.on("beforeOpen", () => {
-            document.querySelectorAll<HTMLVideoElement>("#gallery video").forEach((v) => {
-                v.pause();
-            });
-
-            document.querySelectorAll<HTMLAnchorElement>("#gallery a").forEach((a) => {
-                const img = a.querySelector("img");
-                if (img?.naturalWidth) {
-                    a.dataset.pswpWidth = String(img.naturalWidth);
-                    a.dataset.pswpHeight = String(img.naturalHeight);
-                }
-            });
-        });
-
-        // Reanudar los videos del grid al cerrar el lightbox
-        lightbox.on("close", () => {
-            document.querySelectorAll<HTMLVideoElement>("#gallery video").forEach((v) => {
-                v.play().catch(() => { });
-            });
-        });
-
-        // Cargar video personalizado en el lightbox
-        lightbox.on("contentLoad", (e: any) => {
-            const { content } = e;
-            if (content.data.type === "video") {
-                e.preventDefault();
-                const video = document.createElement("video");
-                video.src = content.data.src;
-                video.controls = true;
-                video.autoplay = true;
-                video.playsInline = true;
-                video.style.width = "100%";
-                video.style.height = "100%";
-                video.style.maxHeight = "80vh";
-                video.style.objectFit = "contain";
-                content.element = video;
-            }
-        });
-
-        // Detener y limpiar el video del lightbox al destruirlo
-        lightbox.on("contentDestroy", (e: any) => {
-            const { content } = e;
-            if (content.element instanceof HTMLVideoElement) {
-                content.element.pause();
-                content.element.src = "";
-            }
-        });
-
-        lightbox.init();
-        return () => lightbox.destroy();
     }, [active]);
 
     useEffect(() => {
@@ -168,21 +292,17 @@ export default function Projects() {
 
             {/* Tabs */}
             <div className="relative mb-10">
-                {/* Full-width bottom border */}
                 <div className="absolute bottom-0 left-0 w-full h-px bg-gray-700 z-0" />
-
                 <div
                     ref={tabsRef}
                     className="relative flex overflow-x-auto"
                     style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                 >
-                    {/* Sliding gold underline indicator */}
                     <div
                         ref={indicatorRef}
                         className="absolute bottom-0 h-0.5 bg-gold transition-all duration-300 ease-out z-10"
                         style={{ left: 0, width: 0 }}
                     />
-
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
@@ -202,16 +322,14 @@ export default function Projects() {
                         >
                             {tab.label}
                             {tab.count > 0 && (
-                                <span
-                                    className={`
-                                        text-[10px] px-1.5 py-0.5 rounded-full
-                                        font-mono tabular-nums leading-none
-                                        ${active === tab.id
-                                            ? "bg-yellow-700/40 text-black"
-                                            : "bg-white/10 text-gray-400"
-                                        }
-                                    `}
-                                >
+                                <span className={`
+                                    text-[10px] px-1.5 py-0.5 rounded-full
+                                    font-mono tabular-nums leading-none
+                                    ${active === tab.id
+                                        ? "bg-yellow-700/40 text-black"
+                                        : "bg-white/10 text-gray-400"
+                                    }
+                                `}>
                                     {tab.count}
                                 </span>
                             )}
@@ -221,12 +339,9 @@ export default function Projects() {
             </div>
 
             {/* Gallery */}
-            {data[active].length ? (
-                <div
-                    id="gallery"
-                    className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3"
-                >
-                    {data[active].map((file, i) => {
+            {currentFiles.length ? (
+                <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+                    {currentFiles.map((file, i) => {
                         const isVideo =
                             file.toLowerCase().endsWith(".mp4") ||
                             file.toLowerCase().endsWith(".mov");
@@ -236,50 +351,23 @@ export default function Projects() {
                                 key={i}
                                 data-aos="fade-up"
                                 data-aos-delay={i * 30}
-                                className="break-inside-avoid overflow-hidden rounded-md group bg-black relative"
+                                className="break-inside-avoid overflow-hidden rounded-md group bg-black relative cursor-pointer"
+                                onClick={() => openLightbox(i)}
                             >
-                                <a
-                                    href={file}
-                                    data-pswp-type={isVideo ? "video" : "image"}
-                                    className="block"
-                                >
-                                    {isVideo ? (
-                                        <div className="relative w-full aspect-video">
-                                            <video
-                                                src={file}
-                                                className="w-full h-full object-cover"
-                                                muted
-                                                loop
-                                                playsInline
-                                            />
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                                <div className="w-10 h-10 rounded-full bg-gold/90 flex items-center justify-center shadow-lg">
-                                                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-black ml-0.5">
-                                                        <path d="M8 5v14l11-7z" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="relative w-full">
-                                            <Image
-                                                src={file}
-                                                alt={`Proyecto ${i + 1}`}
-                                                width={800}
-                                                height={600}
-                                                className="w-full h-auto object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-                                                onLoadingComplete={(img) => {
-                                                    const anchor = img.closest("a");
-                                                    if (anchor) {
-                                                        anchor.dataset.pswpWidth = String(img.naturalWidth);
-                                                        anchor.dataset.pswpHeight = String(img.naturalHeight);
-                                                    }
-                                                }}
-                                            />
-                                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                                        </div>
-                                    )}
-                                </a>
+                                {isVideo ? (
+                                    <VideoThumbnail src={file} />
+                                ) : (
+                                    <div className="relative w-full">
+                                        <Image
+                                            src={file}
+                                            alt={`Proyecto ${i + 1}`}
+                                            width={800}
+                                            height={600}
+                                            className="w-full h-auto object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
@@ -291,6 +379,17 @@ export default function Projects() {
                         Próximamente
                     </p>
                 </div>
+            )}
+
+            {/* Lightbox */}
+            {lightboxIndex !== null && (
+                <Lightbox
+                    files={currentFiles}
+                    index={lightboxIndex}
+                    onClose={closeLightbox}
+                    onPrev={prevItem}
+                    onNext={nextItem}
+                />
             )}
         </section>
     );
