@@ -21,7 +21,7 @@ export default function About() {
                 >
                     <p>
                         <b>Camarillo Casting</b> es una agencia especializada en la contratación y gestión de extras para producciones audiovisuales, dedicada a conectar talento diverso con las necesidades específicas de cada proyecto. <br />
-                        Nuestro objetivo es <b>facilitar el proceso de producción</b> a través de una selección cuidadosa y una gestión profesional del talento.
+                        Nuestro objetivo es <b>facilitar el proceso</b> a través de una selección cuidadosa y una gestión profesional del talento.
                     </p>
 
                     <p data-aos="fade-right" data-aos-delay="200">

@@ -4,7 +4,7 @@ export const info = [
     {
         name: "Extras & Talento",
         info: "221 440 6455",
-        description: "Para registrarte como extra en nuestras producciones",
+        description: "Para participar en nuestros proyectos",
         icon: Users,
     },
     {

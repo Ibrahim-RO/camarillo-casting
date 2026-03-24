@@ -23,17 +23,16 @@ export default function Home() {
         <section id="proyectos" className="scroll-mt-20" data-aos="fade-up" data-aos-delay="100">
           <Projects />
         </section>
-
-        <section id="ubicacion" className="scroll-mt-20">
-          <h2 className="text-3xl md:text-5xl font-serif mb-8 text-center">
-            Donde tu <span className="text-gold">producción</span> nos necesite
-          </h2>
-          <div data-aos="zoom-in" data-aos-delay="150">
-            <Location />
-          </div>
-        </section>
-
       </div>
+
+      <section id="ubicacion" className="scroll-mt-20 w-full lg:max-w-7xl lg:mx-auto">
+        <h2 className="text-3xl md:text-5xl font-serif mb-8 text-center">
+          Donde tu <span className="text-gold">producción</span> nos necesite
+        </h2>
+        <div data-aos="zoom-in" data-aos-delay="150">
+          <Location />
+        </div>
+      </section>
 
       <section id="clientes" className="scroll-mt-20 my-5">
         <MarcasClientes />

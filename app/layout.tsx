@@ -4,6 +4,7 @@ import "./globals.css";
 import "photoswipe/style.css";
 import AOSProvider from "@/src/shared/utils/AosProvider";
 import { cn } from "@/lib/utils";
+import ToastContainer from "@/src/shared/components/ToastContainer";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -36,6 +37,7 @@ export default function RootLayout({
       >
         <AOSProvider>
           {children}
+          <ToastContainer />
         </AOSProvider>
       </body>
     </html>

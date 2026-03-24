@@ -43,8 +43,18 @@ export default function Projects() {
             "/rodaje/c5a55e4d-9073-44cb-b931-63bdc5e4a7fa.jpg",
             "/rodaje/cc9e8d1e-d558-4297-9507-7725f2659076.JPG",
             "/rodaje/d68aa50a-2fbe-474b-9bef-eda6c393cd5b.jpg",
+            "/rodaje/IMG_0618.jpg",
+            "/rodaje/IMG_1068.png",
+            "/rodaje/IMG_1076.jpg",
+            "/rodaje/IMG_1529.jpg",
+            "/rodaje/IMG_1561.jpg",
+            "/rodaje/IMG_1802.jpg",
             "/rodaje/IMG_2471.jpg",
+            "/rodaje/IMG_6729.jpg",
+            "/rodaje/IMG_8447.png",
             "/rodaje/IMG_8782 2.jpg",
+            "/rodaje/IMG_9063.jpg",
+            "/rodaje/IMG_9107.jpg",
         ],
     };
 
@@ -69,7 +79,6 @@ export default function Projects() {
         indicator.style.width = `${activeBtn.offsetWidth}px`;
         indicator.style.left = `${activeBtn.offsetLeft}px`;
 
-        // Solo hacer scroll del tab si el usuario ya interactuó
         if (userInteracted.current) {
             activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
         }
@@ -88,7 +97,12 @@ export default function Projects() {
             padding: { top: 40, bottom: 40, left: 40, right: 40 },
         });
 
+        // Pausar todos los videos del grid al abrir el lightbox
         lightbox.on("beforeOpen", () => {
+            document.querySelectorAll<HTMLVideoElement>("#gallery video").forEach((v) => {
+                v.pause();
+            });
+
             document.querySelectorAll<HTMLAnchorElement>("#gallery a").forEach((a) => {
                 const img = a.querySelector("img");
                 if (img?.naturalWidth) {
@@ -98,6 +112,14 @@ export default function Projects() {
             });
         });
 
+        // Reanudar los videos del grid al cerrar el lightbox
+        lightbox.on("close", () => {
+            document.querySelectorAll<HTMLVideoElement>("#gallery video").forEach((v) => {
+                v.play().catch(() => { });
+            });
+        });
+
+        // Cargar video personalizado en el lightbox
         lightbox.on("contentLoad", (e: any) => {
             const { content } = e;
             if (content.data.type === "video") {
@@ -112,6 +134,15 @@ export default function Projects() {
                 video.style.maxHeight = "80vh";
                 video.style.objectFit = "contain";
                 content.element = video;
+            }
+        });
+
+        // Detener y limpiar el video del lightbox al destruirlo
+        lightbox.on("contentDestroy", (e: any) => {
+            const { content } = e;
+            if (content.element instanceof HTMLVideoElement) {
+                content.element.pause();
+                content.element.src = "";
             }
         });
 
@@ -140,11 +171,6 @@ export default function Projects() {
                 {/* Full-width bottom border */}
                 <div className="absolute bottom-0 left-0 w-full h-px bg-gray-700 z-0" />
 
-                {/*
-                  overflow-x-auto  → scroll horizontal en móvil
-                  scrollbar-none   → oculta la barra de scroll (Tailwind plugin)
-                  style inline     → fallback cross-browser para ocultar scrollbar
-                */}
                 <div
                     ref={tabsRef}
                     className="relative flex overflow-x-auto"
