@@ -49,15 +49,19 @@ const inputCls = `
   transition-colors duration-150
 `
 
-const SERVICE_ID = 'service_2v7hmiv'
-const TEMPLATE_ID = 'template_0ppa3nu'
-const PUBLIC_KEY = 'ifwjxDt9xjcnJH8j1'
+const SERVICE_ID = 'service_61ag73f'
+const TEMPLATE_ID = 'template_1e5rz4o'
+const PUBLIC_KEY = 'N8z0vPYXAyesIEt1F'
 
 export function ModalContact() {
   const [needs, setNeeds] = useState({
     Extras: false,
     Talentos: false,
   })
+
+  const [open, setOpen] = useState(false)
+
+  const closeModal = () => setOpen(false)
 
   const {
     register,
@@ -101,6 +105,7 @@ export function ModalContact() {
       reset()
       setNeeds({ Extras: false, Talentos: false })
       toast.success("Correo enviado correctamente")
+      closeModal()
     } catch (error) {
       console.error("EmailJS Error:", error)
       setStatus("error")
@@ -109,7 +114,7 @@ export function ModalContact() {
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-gold hover:brightness-90 text-base sm:text-lg text-black font-semibold px-5 sm:px-6 rounded-lg h-8 sm:h-12 cursor-pointer">
           Contacto
