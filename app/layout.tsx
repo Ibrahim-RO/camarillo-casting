@@ -42,13 +42,13 @@ export const metadata: Metadata = {
   creator: "Camarillo Casting",
   publisher: "Camarillo Casting",
 
-  metadataBase: new URL("https://tudominio.com"),
+  metadataBase: new URL("https://camarillocasting.com"),
 
   openGraph: {
     title: "Camarillo Casting | Agencia de Extras en México",
     description:
       "Especialistas en casting de extras para cine, series y comerciales. Operamos en Puebla, CDMX y toda la República.",
-    url: "https://tudominio.com",
+    url: "https://camarillocasting.com",
     siteName: "Camarillo Casting",
     locale: "es_MX",
     type: "website",
