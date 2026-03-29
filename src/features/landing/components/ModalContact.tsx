@@ -117,7 +117,7 @@ export function ModalContact() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-gold hover:brightness-90 text-base sm:text-lg text-black font-semibold px-5 sm:px-6 rounded-lg h-8 sm:h-12 cursor-pointer">
-          Contacto
+          Registrate
         </Button>
       </DialogTrigger>
 

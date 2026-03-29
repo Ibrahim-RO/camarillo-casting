@@ -10,7 +10,7 @@ export default function Footer() {
         <footer className="bg-[#121112] text-center py-8 space-y-8 text-white">
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="flex flex-col items-center lg:items-start gap-3">
-                    <img src="/logoBlanco.png" alt="Logo Camarillo Casting" className="w-36"/>
+                    <img src="/logoBlanco.png" alt="Logo Camarillo Casting" className="w-36" />
                     <p className="max-w-md px-4 lg:p-0 text-center lg:text-left">"Donde el talento encuentra su escena y el casting se convierte en respaldo para tu producción"</p>
                 </div>
 
@@ -25,7 +25,10 @@ export default function Footer() {
                     </nav>
                 </div>
             </div>
-            <p>&copy; {new Date().getFullYear()} Camarillo Casting - Puebla, México</p>
+            <div className="space-y-2">
+                <p>&copy; {new Date().getFullYear()} Camarillo Casting - Puebla, México</p>
+                <p className="text-sm text-gray-400">Sitio web elaborado por: <a href="https://www.devstackstudio.com.mx/" target="_blank" className="text-gold hover:underline">DevStack Studio</a></p>
+            </div>
         </footer>
     )
 }

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { ModalContact } from "./ModalContact";
+import Link from "next/link";
 
 export default function HeroImage() {
   return (
@@ -60,16 +61,18 @@ export default function HeroImage() {
           Buscamos talentos y extras para las producciones más importantes de la industria cinematográfica y televisiva.
         </p>
 
-        {/* Botón
-        <button
-          data-aos="zoom-in"
-          data-aos-delay="400"
-          className="bg-gold hover:bg-yellow-600 text-lg text-black font-semibold px-6 py-3 rounded-lg transition-colors duration-300 cursor-pointer"
-        >
-          Contáctanos
-        </button> */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <article className="space-y-3">
+            <p className="font-bold">Contratación de servicios de Casting</p>
+            <ModalContact />
+          </article>
 
-        <ModalContact />
+          <article className="space-y-3">
+            <p className="mb-6 font-bold">Registrate en nuestro Casting</p>
+            <Link href="#contacto" className="bg-gold hover:brightness-90 text-base sm:text-lg text-black font-semibold px-5 sm:px-6 rounded-lg h-8 sm:h-12 cursor-pointer py-3 scroll-m-80">Contacto</Link>            
+          </article>
+        </section>
+
 
       </div>
 
