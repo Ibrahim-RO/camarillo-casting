@@ -216,6 +216,11 @@ export default function Projects() {
             "/comerciales/ea5d2475-7431-48c4-8f6b-e4fe5022601f.mov",
             "/comerciales/f5e51c3e-9afa-4cce-917c-3723b99f9927.MP4",
             "/comerciales/f7cb34dd-7924-43ef-b9bb-83e6cc938640.MP4",
+            "/comerciales/4edf3976-ea9b-4ae7-846c-9c1f3a83d288.mov",
+            "/comerciales/7a77cdeb-a27d-402b-86a9-7c6d2b1a4754.MP4",
+            "/comerciales/0318.MP4",
+            "/comerciales/b76cdcd2-d42c-4441-a55b-c9471ff68a87.mov",
+            "/comerciales/bc6cccf2-346e-4e37-a1f1-1a8d311fa090.MP4",
         ],
         rodaje: [
             "/rodaje/8b874467-b39d-427e-91eb-ef6c8becc1fa.jpg",
