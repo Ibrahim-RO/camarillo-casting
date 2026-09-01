@@ -221,6 +221,7 @@ export default function Projects() {
             "/comerciales/0318.MP4",
             "/comerciales/b76cdcd2-d42c-4441-a55b-c9471ff68a87.mov",
             "/comerciales/bc6cccf2-346e-4e37-a1f1-1a8d311fa090.MP4",
+            "/comerciales/6a164b09-e57d-4002-a173-6f52994486c5.MP4",
         ],
         rodaje: [
             "/rodaje/8b874467-b39d-427e-91eb-ef6c8becc1fa.jpg",
@@ -246,6 +247,7 @@ export default function Projects() {
             "/rodaje/IMG_8782 2.jpg",
             "/rodaje/IMG_9063.jpg",
             "/rodaje/IMG_9107.jpg",
+            "/rodaje/IMG_0570.PNG",
         ],
     };
 
