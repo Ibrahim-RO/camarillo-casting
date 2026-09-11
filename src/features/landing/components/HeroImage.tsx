@@ -1,20 +1,34 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useRef } from "react";
 import { ModalContact } from "./ModalContact";
 import Link from "next/link";
 
 export default function HeroImage() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Respect the user's motion preference: freeze on the first frame instead of autoplaying.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      videoRef.current?.pause();
+    }
+  }, []);
+
   return (
     <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
 
-      {/* Imagen de fondo */}
-      <Image
-        src="/hero.png"
-        alt="Hero background"
-        fill
-        priority
-        className="object-cover object-center"
+      {/* Video de fondo */}
+      <video
+        ref={videoRef}
+        className="absolute inset-0 h-full w-full object-cover object-center"
+        src="/hero-cam.webm"
+        poster="/hero.png"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
       />
 
       {/* Overlay */}
@@ -28,11 +42,11 @@ export default function HeroImage() {
           data-aos="fade-down"
           data-aos-delay="100"
           className="
-            flex items-center gap-2 
-            px-5 py-2 
-            rounded-full 
-            bg-black/40 
-            backdrop-blur-md 
+            flex items-center gap-2
+            px-5 py-2
+            rounded-full
+            bg-black/40
+            backdrop-blur-md
             border border-gold/40
             shadow-[0_0_20px_rgba(201,167,79,0.15)]
             hover:scale-105 transition-all duration-300
@@ -69,7 +83,7 @@ export default function HeroImage() {
 
           <article className="space-y-3">
             <p className="mb-6 font-bold">Registrate en nuestro Casting</p>
-            <Link href="#contacto" className="bg-gold hover:brightness-90 text-base sm:text-lg text-black font-semibold px-5 sm:px-6 rounded-lg h-8 sm:h-12 cursor-pointer py-3 scroll-m-80">Contacto</Link>            
+            <Link href="#contacto" className="bg-gold hover:brightness-90 text-base sm:text-lg text-black font-semibold px-5 sm:px-6 rounded-lg h-8 sm:h-12 cursor-pointer py-3 scroll-m-80">Contacto</Link>
           </article>
         </section>
 

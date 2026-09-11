@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ubicación — Camarillo Casting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --gold: #C6A052;
+    --gold-lift: #E0C48A;
+    --gold-soft: rgba(198, 160, 82, .4);
+    --ink: #131110;
+    --paper: #F2EDE6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--ink); overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center;
+         font-family: 'Jost', 'Century Gothic', 'Trebuchet MS', sans-serif; color: var(--paper);
+         -webkit-font-smoothing: antialiased; }
+  a { color: var(--gold); }
+  a:hover { color: var(--paper); }
+
+  #stage { position: relative; width: 1600px; height: 900px; overflow: hidden;
+           background: var(--ink); flex: none; transform-origin: center center; }
+
+  #view { position: absolute; inset: 0; }
+
+  #map { position: absolute; inset: 0; width: 100%; height: 100%;
+         transform-origin: 800px 450px; transition: transform .8s cubic-bezier(.33, 1, .68, 1); will-change: transform; }
+  #map path.land { fill: #2E2823; stroke: #131110; stroke-width: .7; }
+  #map path.focus { fill: #473F35; }
+  #arc { fill: none; stroke: var(--gold-soft); stroke-width: 1.2;
+         stroke-dasharray: 1800; stroke-dashoffset: 1800;
+         animation: draw 2s cubic-bezier(.4,0,.2,1) .55s forwards; }
+  #leaders line { stroke: var(--gold-soft); stroke-width: 1; transition: stroke .25s ease;
+                  opacity: 0; animation: fade .8s ease forwards; }
+  #leaders line.on { stroke: var(--gold-lift); }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes fade { to { opacity: 1; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes pop  { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
+  @keyframes pulse { 0% { opacity: .5; transform: scale(.5); } 70%, 100% { opacity: 0; transform: scale(2.1); } }
+  @keyframes wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -6% 0 0); } }
+
+  /* atmosphere */
+  #scrim { position: absolute; inset: 0; pointer-events: none; z-index: 2;
+           background:
+             linear-gradient(97deg, #131110 0%, rgba(19,17,16,.97) 26%, rgba(19,17,16,.6) 42%, rgba(19,17,16,0) 60%),
+             radial-gradient(120% 90% at 18% 40%, rgba(198,160,82,.09), rgba(198,160,82,0) 55%),
+             radial-gradient(130% 120% at 50% 50%, rgba(19,17,16,0) 42%, rgba(19,17,16,.72) 100%); }
+
+  /* pin layer — pans as one with the map when a location is selected */
+  #pins { position: absolute; inset: 0; z-index: 3;
+          transform-origin: 800px 450px; transition: transform .8s cubic-bezier(.33, 1, .68, 1); will-change: transform; }
+
+  /* solid field that keeps the title + index off the map */
+  #panel { position: absolute; left: 0; top: 0; bottom: 0; width: 495px; z-index: 4;
+           background: var(--ink); border-right: 1px solid rgba(198, 160, 82, .16); }
+  #panel::after { content: ""; position: absolute; left: 100%; top: 0; bottom: 0; width: 50px;
+                  background: linear-gradient(to right, var(--ink), rgba(19, 17, 16, 0)); }
+
+  /* ── title ───────────────────────────────────── */
+  #head { position: absolute; left: 92px; top: 168px; width: 300px; z-index: 6; }
+  #head .sub { display: flex; flex-direction: column; align-items: flex-start; margin: 0;
+               font-size: 32px; font-weight: 300; letter-spacing: .13em; line-height: 1.18;
+               text-transform: uppercase; color: rgba(242, 237, 230, .95);
+               animation: rise .9s ease .15s both; }
+  #head .sub::before { content: ""; width: 46px; height: 2px; margin-bottom: 24px; background: var(--gold); }
+
+  /* ── index ───────────────────────────────────── */
+  #list { position: absolute; left: 92px; top: 358px; width: 330px; margin: 0; padding: 0;
+          list-style: none; z-index: 6; }
+  #list li { border-top: 1px solid rgba(242, 237, 230, .11); animation: rise .7s ease both; }
+  #list li:last-child { border-bottom: 1px solid rgba(242, 237, 230, .11); }
+  .row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 16px;
+         width: 100%; padding: 15px 12px 15px 2px; background: none; border: 0; color: inherit;
+         font: inherit; text-align: left; cursor: pointer;
+         transition: background .24s ease, padding-left .24s ease; }
+  .row .num { font-size: 12px; letter-spacing: .16em; color: var(--gold); transition: color .22s ease; }
+  .row .nm { font-size: 21px; font-weight: 300; letter-spacing: .15em; text-transform: uppercase;
+             color: rgba(242, 237, 230, .78); transition: color .22s ease; }
+  .row .cty { font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+              color: rgba(242, 237, 230, .66); transition: color .22s ease; }
+  .row:hover, .row.on { background: rgba(198, 160, 82, .08); padding-left: 12px; }
+  .row:hover .num, .row.on .num { color: var(--gold-lift); }
+  .row:hover .nm, .row.on .nm { color: var(--paper); }
+  .row:hover .cty, .row.on .cty { color: var(--gold); }
+
+  /* ── markers ─────────────────────────────────── */
+  .marker { position: absolute; width: 0; height: 0; z-index: 3; }
+  .marker .hit { position: absolute; left: -13px; top: -13px; width: 26px; height: 26px;
+                 border-radius: 50%; cursor: pointer; }
+  .dot { position: absolute; left: -5.5px; top: -5.5px; width: 11px; height: 11px; border-radius: 50%;
+         background: var(--gold); box-shadow: 0 0 0 3px rgba(19,17,16,.6), 0 0 16px rgba(198,160,82,.5);
+         transition: transform .28s cubic-bezier(.2,.8,.2,1), background .22s ease;
+         animation: pop .6s cubic-bezier(.2,1.3,.4,1) both; }
+  .beat { position: absolute; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%;
+          border: 1px solid var(--gold); opacity: 0; animation: pulse 3.4s ease-out infinite; }
+  .ring { position: absolute; left: -21px; top: -21px; width: 42px; height: 42px; border-radius: 50%;
+          border: 1px solid var(--gold-lift); opacity: 0; transform: scale(.45);
+          transition: opacity .35s ease, transform .4s cubic-bezier(.2,.8,.2,1); }
+  .lab { position: absolute; white-space: nowrap; font-size: 18px; font-weight: 300;
+         letter-spacing: .17em; text-transform: uppercase; color: rgba(242, 237, 230, .9);
+         text-shadow: 0 1px 8px #131110, 0 0 18px #131110; pointer-events: none;
+         transition: color .22s ease; animation: fade .9s ease both; }
+  .lab small { display: block; margin-top: 5px; font-size: 12px; letter-spacing: .24em;
+               color: var(--gold); }
+  .marker:hover { z-index: 12; }
+  .marker.on { z-index: 10; }
+  .marker:hover .dot, .marker.on .dot { transform: scale(1.55); background: var(--gold-lift); }
+  .marker:hover .ring, .marker.on .ring { opacity: 1; transform: scale(1); }
+  .marker:hover .lab, .marker.on .lab { color: #fff; }
+
+  #err { position: absolute; left: 92px; top: 760px; z-index: 7; font-size: 15px;
+         color: rgba(242,237,230,.6); }
+
+  /* ── mobile: stacked layout · título / mapa / índice ─────── */
+  body.is-mobile { display: block; height: auto; overflow: visible; }
+  body.is-mobile #stage {
+    position: relative; width: 100%; height: auto; overflow: visible;
+    transform: none !important; display: flex; flex-direction: column;
+  }
+  body.is-mobile #panel { display: none; }
+
+  body.is-mobile #head {
+    position: static; left: auto; top: auto; width: auto; order: 1;
+    padding: 26px 22px 18px;
+  }
+  body.is-mobile #head .sub { font-size: 23px; letter-spacing: .1em; line-height: 1.25; }
+  body.is-mobile #head .sub::before { width: 40px; margin-bottom: 14px; }
+
+  body.is-mobile #view {
+    position: relative; inset: auto; order: 2;
+    width: 100%; aspect-ratio: 3 / 2;
+  }
+  body.is-mobile #map, body.is-mobile #pins { transform: none !important; transition: none; }
+  body.is-mobile #scrim {
+    background: radial-gradient(120% 78% at 50% 44%, rgba(19,17,16,0) 42%, rgba(19,17,16,.6) 100%);
+  }
+  body.is-mobile .lab, body.is-mobile #leaders { display: none; }
+  body.is-mobile .marker { pointer-events: none; }
+
+  body.is-mobile #list {
+    position: static; left: auto; top: auto; width: auto; order: 3;
+    padding: 4px 12px 26px;
+  }
+  body.is-mobile .row { padding: 16px 14px; }
+  body.is-mobile .row:hover, body.is-mobile .row.on { padding-left: 14px; }
+  body.is-mobile .row .nm { font-size: 19px; }
+
+  body.is-mobile #err { position: static; left: auto; top: auto; order: 4; padding: 10px 22px 20px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #map, #pins { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="view">
+    <svg id="map" viewBox="0 0 1600 900" aria-label="Mapa de locaciones de filmación">
+      <g id="countries"></g>
+      <path id="arc"></path>
+      <g id="leaders"></g>
+    </svg>
+    <div id="scrim"></div>
+    <div id="pins"></div>
+  </div>
+  <div id="panel"></div>
+
+  <header id="head">
+    <p class="sub">Locaciones donde hemos filmado</p>
+  </header>
+
+  <ol id="list"></ol>
+</div>
+
+<script>
+const LOCATIONS = [
+  { id: 'cdmx',     name: 'CDMX',     note: 'México',   lon: -99.1332, lat: 19.4326, off: [-206,  14], anchor: 'end'   },
+  { id: 'puebla',   name: 'Puebla',   note: 'México',   lon: -98.2063, lat: 19.0414, off: [-158, 116], anchor: 'end'   },
+  { id: 'hidalgo',  name: 'Hidalgo',  note: 'México',   lon: -98.7591, lat: 20.1011, off: [   6,-158], anchor: 'start' },
+  { id: 'veracruz', name: 'Veracruz', note: 'México',   lon: -96.1342, lat: 19.1738, off: [ 188, -92], anchor: 'start' },
+  { id: 'oaxaca',   name: 'Oaxaca',   note: 'México',   lon: -96.7266, lat: 17.0732, off: [ 156, 124], anchor: 'start' },
+  { id: 'bogota',   name: 'Bogotá',   note: 'Colombia', lon: -74.0721, lat:  4.7110, off: [-166, -98], anchor: 'end'   }
+];
+const FOCUS = ['Mexico', 'Colombia'];
+const W = 1600, H = 900;
+
+const svg = d3.select('#map');
+const mapEl = document.getElementById('map');
+const pinsEl = document.getElementById('pins');
+const leadersEl = d3.select('#leaders');
+const listEl = document.getElementById('list');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let mobile = false;   // set by layout() — drives the stacked mobile layout
+
+LOCATIONS.forEach((loc, i) => {
+  const li = document.createElement('li');
+  li.style.animationDelay = (0.62 + i * 0.07) + 's';
+  li.innerHTML = '<button class="row" data-id="' + loc.id + '">' +
+    '<span class="num">' + String(i + 1).padStart(2, '0') + '</span>' +
+    '<span class="nm">' + loc.name + '</span>' +
+    '<span class="cty">' + loc.note + '</span></button>';
+  listEl.appendChild(li);
+});
+
+const markers = LOCATIONS.map((loc, i) => {
+  const m = document.createElement('div');
+  m.className = 'marker';
+  m.dataset.id = loc.id;
+  const t = loc.anchor === 'end' ? 'translate(-100%, -50%)' : 'translate(0, -50%)';
+  const d = 0.75 + i * 0.09;
+  m.innerHTML =
+    '<div class="beat" style="animation-delay:' + (d + 0.6) + 's"></div>' +
+    '<div class="ring"></div>' +
+    '<div class="dot" style="animation-delay:' + d + 's"></div>' +
+    '<div class="hit"></div>' +
+    '<div class="lab" style="left:' + loc.off[0] + 'px; top:' + loc.off[1] + 'px; transform:' + t +
+      '; text-align:' + (loc.anchor === 'end' ? 'right' : 'left') +
+      '; animation-delay:' + (d + 0.25) + 's">' +
+      loc.name + '<small>' + loc.note + '</small></div>';
+  pinsEl.appendChild(m);
+  return m;
+});
+LOCATIONS.map((l, i) => [l.lat, i]).sort((a, b) => b[0] - a[0])
+  .forEach(([, i], order) => { markers[i].style.zIndex = 3 + order; });
+
+const leaderLines = leadersEl.selectAll('line').data(LOCATIONS).join('line')
+  .style('animation-delay', (d, i) => (1.05 + i * 0.09) + 's');
+
+// where the selected location should glide to, how much to zoom, and the scale origin
+const FOCUS_X = 1060, FOCUS_Y = 400, FOCUS_ZOOM = 1.3;
+const CX = W / 2, CY = H / 2;
+let panSettle = null;
+
+function moveMap(id) {
+  if (reduceMotion || mobile) return;   // no pan on the small stacked map
+  const loc = LOCATIONS.find(l => l.id === id);
+  let t = 'translate(0px, 0px) scale(1)';
+  if (loc) {
+    const p = proj([loc.lon, loc.lat]);
+    const z = FOCUS_ZOOM;
+    let tx = FOCUS_X - CX - z * (p[0] - CX);
+    let ty = FOCUS_Y - CY - z * (p[1] - CY);
+    // never pan so far that the map stops covering the frame (0.95 leaves a safety margin)
+    const mx = CX * (z - 1) * 0.95, my = CY * (z - 1) * 0.95;
+    tx = Math.max(-mx, Math.min(mx, tx));
+    ty = Math.max(-my, Math.min(my, ty));
+    t = 'translate(' + tx.toFixed(1) + 'px, ' + ty.toFixed(1) + 'px) scale(' + z + ')';
+  }
+  mapEl.style.transform = t;
+  pinsEl.style.transform = t;
+  // freeze pointer input on the pins while they glide, so a moving dot can't re-trigger anything
+  pinsEl.style.pointerEvents = 'none';
+  clearTimeout(panSettle);
+  panSettle = setTimeout(() => { pinsEl.style.pointerEvents = ''; }, 850);
+}
+
+// just the visual state — cheap, and it never moves the map
+function highlight(id) {
+  markers.forEach(m => m.classList.toggle('on', m.dataset.id === id));
+  listEl.querySelectorAll('.row').forEach(r => r.classList.toggle('on', r.dataset.id === id));
+  leaderLines.classed('on', d => d.id === id);
+}
+
+function setActive(id) {
+  highlight(id);
+  moveMap(id);
+}
+
+let locked = null;
+
+function select(id) {
+  locked = (locked === id) ? null : id;   // click the active point again to release it
+  setActive(locked);
+}
+
+// markers respond to click only — hovering never pans, so a dot can't slide out from under the cursor
+markers.forEach(m => {
+  m.addEventListener('click', e => { e.stopPropagation(); select(m.dataset.id); });
+});
+
+// the index rows never move, so they can safely preview on hover
+listEl.querySelectorAll('.row').forEach(r => {
+  r.addEventListener('click', e => { e.stopPropagation(); select(r.dataset.id); });
+  r.addEventListener('mouseenter', () => { if (locked === null) highlight(r.dataset.id); });
+  r.addEventListener('mouseleave', () => { if (locked === null) highlight(null); });
+});
+
+// click anywhere that isn't a point clears the selection
+document.getElementById('stage').addEventListener('click', () => {
+  if (locked !== null) select(locked);
+});
+
+// projection: México → Colombia, bleeding past the frame for scale
+const proj = d3.geoMercator().fitExtent([[500, -40], [1720, 940]], {
+  type: 'MultiPoint',
+  coordinates: [[-114, 1], [-64, 1], [-64, 29], [-114, 29]]
+});
+const path = d3.geoPath(proj);
+
+// projected pixel position of every pin (fixed — the projection never changes)
+const PP = LOCATIONS.map(l => proj([l.lon, l.lat]));
+
+// a 3:2 window on the projection that frames every pin — used by the mobile layout
+const _xs = PP.map(p => p[0]), _ys = PP.map(p => p[1]);
+const _cx = (Math.min(..._xs) + Math.max(..._xs)) / 2;
+const _cy = (Math.min(..._ys) + Math.max(..._ys)) / 2;
+const _AR = 3 / 2;
+let _vbW = (Math.max(..._xs) - Math.min(..._xs)) + 300;
+let _vbH = (Math.max(..._ys) - Math.min(..._ys)) + 180;
+if (_vbW / _vbH < _AR) _vbW = _vbH * _AR; else _vbH = _vbW / _AR;
+const MVB = [_cx - _vbW / 2, _cy - _vbH / 2, _vbW, _vbH];
+
+// pin dots overlay the SVG; position them relative to whichever viewBox is active
+function placePins() {
+  const v = mobile ? MVB : [0, 0, W, H];
+  LOCATIONS.forEach((loc, i) => {
+    markers[i].style.left = ((PP[i][0] - v[0]) / v[2] * 100) + '%';
+    markers[i].style.top  = ((PP[i][1] - v[1]) / v[3] * 100) + '%';
+  });
+}
+
+function drawPins() {
+  const pts = PP;
+  leaderLines
+    .attr('x1', (d, i) => pts[i][0])
+    .attr('y1', (d, i) => pts[i][1])
+    .attr('x2', (d, i) => pts[i][0] + d.off[0] + (d.anchor === 'end' ? 12 : -12))
+    .attr('y2', (d, i) => pts[i][1] + d.off[1]);
+
+  // sweep between the two countries
+  const a = pts[0], b = pts[5];
+  const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+  const dx = b[0] - a[0], dy = b[1] - a[1];
+  const k = 0.28;
+  d3.select('#arc').attr('d', 'M' + a[0] + ',' + a[1] + ' Q' + (mx + dy * k) + ',' + (my - dx * k) +
+                               ' ' + b[0] + ',' + b[1]);
+}
+
+drawPins();
+placePins();
+
+d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json')
+  .then(topo => {
+    const land = topojson.feature(topo, topo.objects.countries);
+    svg.select('#countries').selectAll('path')
+       .data(land.features.filter(f => f.properties.name !== 'Antarctica'))
+       .join('path')
+       .attr('class', d => 'land' + (FOCUS.includes(d.properties.name) ? ' focus' : ''))
+       .attr('d', path);
+  })
+  .catch(() => {
+    document.getElementById('stage').insertAdjacentHTML('beforeend',
+      '<p id="err">No se pudo cargar la geografía del mapa.</p>');
+  });
+
+const MOBILE_BP = 760;
+const stageEl = document.getElementById('stage');
+let lastH = 0;
+
+// tell the host page how tall the stacked layout is, so the <iframe> can match it
+function reportHeight(force) {
+  if (!mobile) return;
+  const h = Math.ceil(stageEl.getBoundingClientRect().height);
+  if (!h) return;
+  if (!force && Math.abs(h - lastH) <= 1) return;
+  lastH = h;
+  try { parent.postMessage({ type: 'mapa-ubicaciones:h', h: h }, '*'); } catch (e) {}
+}
+
+function applyMode(next) {
+  mobile = next;
+  document.body.classList.toggle('is-mobile', mobile);
+  svg.attr('viewBox', mobile ? MVB.join(' ') : '0 0 ' + W + ' ' + H);
+  mapEl.style.transform = '';
+  pinsEl.style.transform = '';
+  placePins();
+  lastH = 0;
+  if (!mobile) { try { parent.postMessage({ type: 'mapa-ubicaciones:h', h: 0 }, '*'); } catch (e) {} }
+}
+
+function layout() {
+  const vw = window.innerWidth || document.documentElement.clientWidth;
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+  if (!vw || !vh) return;
+  if ((vw < MOBILE_BP) !== mobile) applyMode(vw < MOBILE_BP);
+  if (mobile) {
+    stageEl.style.transform = 'none';
+    reportHeight();
+  } else {
+    stageEl.style.transform = 'scale(' + (Math.min(vw / W, vh / H) || 1) + ')';
+  }
+}
+window.addEventListener('resize', layout);
+window.addEventListener('load', layout);
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'mapa-ubicaciones:ready') reportHeight(true);
+});
+if (window.ResizeObserver) new ResizeObserver(layout).observe(document.body);
+requestAnimationFrame(layout);
+layout();
+</script>
+</body>
+</html>
