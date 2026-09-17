@@ -63,8 +63,11 @@ export default function HeroImage() {
           data-aos-delay="200"
           className="font-serif text-3xl md:text-6xl font-bold text-gold uppercase"
         >
-          REGISTRATE EN NUESTRO CASTING
+          ENCUENTRA EL CASTING IDEAL PARA TU PRODUCCIÓN
+
         </h1>
+
+        <p className="text-xl md:text-2xl font-semibold">Casting profesional para producciones audiovisuales.</p>
 
         {/* Texto */}
         <p
@@ -72,7 +75,8 @@ export default function HeroImage() {
           data-aos-delay="300"
           className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto"
         >
-          Buscamos talentos y extras para las producciones más importantes de la industria cinematográfica y televisiva.
+          ¿Eres talento o extra? 
+          Regístrate en nuestra base de datos
         </p>
 
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
