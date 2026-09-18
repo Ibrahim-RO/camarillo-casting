@@ -69,16 +69,6 @@ export default function HeroImage() {
 
         <p className="text-xl md:text-2xl font-semibold">Casting profesional para producciones audiovisuales.</p>
 
-        {/* Texto */}
-        <p
-          data-aos="fade-up"
-          data-aos-delay="300"
-          className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto"
-        >
-          ¿Eres talento o extra? 
-          Regístrate en nuestra base de datos
-        </p>
-
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <article className="space-y-3">
             <p className="font-bold">Contratación de servicios de Casting</p>
