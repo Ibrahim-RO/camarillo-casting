@@ -3,7 +3,7 @@ import { Users, Briefcase, Mail } from "lucide-react"
 export const info = [
     {
         name: "Extras & Talento",
-        info: "221 440 6455",
+        info: "+52 222 729 5173",
         description: "Para participar en nuestros proyectos",
         icon: Users,
     },
